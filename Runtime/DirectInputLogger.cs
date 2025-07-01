@@ -1,14 +1,16 @@
 /*
- * 
- * Logger for Direct Input by ImDanOush (ATG-Simulator.com), Good for debugs and logs 
+ *
+ * Logger for Direct Input by ImDanOush (ATG-Simulator.com), Good for debugs and logs
  *
  */
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class DirectInputLogger : MonoBehaviour
+namespace DirectInputManager
 {
+    public class DirectInputLogger : MonoBehaviour
+    {
     public static DirectInputLogger Instance { get; private set; }
     private static List<LogEntry> visualLogs = new();
     private static Vector2 logScrollPosition;
@@ -207,3 +209,5 @@ public class DirectInputLogger : MonoBehaviour
         GUI.color = originalColor;
     }
 }
+}
+

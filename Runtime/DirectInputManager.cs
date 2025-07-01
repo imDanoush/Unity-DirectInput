@@ -7,7 +7,10 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
+using UnityEditor.PackageManager;
+using UnityEngine;
 #if UNITY_STANDALONE_WIN
 using UnityEngine;
 #endif
@@ -19,7 +22,7 @@ namespace DirectInputManager
 #if UNITY_STANDALONE_WIN
         const string DLLFile = @"DirectInputForceFeedback.dll";
 #else
-        const string DLLFile = @"..\..\..\..\..\Plugin\DLL\DirectInputForceFeedback.dll";
+        private const string DLLFile = "DirectInputForceFeedback";
 #endif
         [DllImport(DLLFile, CharSet = CharSet.Ansi, EntryPoint = "UpdateConstantForce")]
         internal static extern int UpdateConstantForceSimple([MarshalAs(UnmanagedType.LPStr)] string guidInstance, int magnitude);
@@ -128,8 +131,9 @@ namespace DirectInputManager
         //////////////////////////////////////////////////////////////
         // Cross Platform "Macros" - Allows lib to work in Visual Studio & Unity
         //////////////////////////////////////////////////////////////
-
-#if UNITY_STANDALONE_WIN
+//Need this to work when target build is set to android, adding Android temporarily
+//TODO: FIX Unity_Android
+#if UNITY_STANDALONE_WIN || UNITY_ANDROID
         private static uint ClampAgnostic(uint value, uint min, uint max) => (uint)Mathf.Clamp(value, min, max);
         private static int ClampAgnostic(int value, int min, int max) => Mathf.Clamp(value, min, max);
 
@@ -603,7 +607,7 @@ namespace DirectInputManager
 
         /// <summary>
         /// Update existing effect with new DICONDITION array<br/><br/>
-        /// 
+        ///
         /// DICondition[DeviceFFBEffectAxesCount]:<br/><br/>
         /// deadband: Inacive Zone [-10,000 - 10,000]<br/>
         /// offset: Move Effect Center[-10,000 - 10,000]<br/>
@@ -937,7 +941,7 @@ namespace DirectInputManager
         /// <returns>
         /// Bool if GUID was found <br/>
         /// OUT ADI of device if found
-        /// </returns>    
+        /// </returns>
         public static bool GetADI(DeviceInfo device, out ActiveDeviceInfo ADI) => GetADI(device.guidInstance, out ADI);
 
         //////////////////////////////////////////////////////////////
@@ -946,7 +950,7 @@ namespace DirectInputManager
 
         /// <summary>
         /// Update existing effect with new DICONDITION array<br/><br/>
-        /// 
+        ///
         /// DICondition[DeviceFFBEffectAxesCount]:<br/><br/>
         /// deadband: Inacive Zone [-10,000 - 10,000]<br/>
         /// offset: Move Effect Center[-10,000 - 10,000]<br/>
@@ -1317,22 +1321,22 @@ namespace DirectInputManager
         /// </summary>
         public int offset;
         /// <summary>
-        /// Coefficient constant on the positive side of the offset, in the range 
+        /// Coefficient constant on the positive side of the offset, in the range
         /// from - 10,000 through 10,000.
         /// </summary>
         public int positiveCoefficient;
         /// <summary>
-        /// Coefficient constant on the negative side of the offset, in the range 
+        /// Coefficient constant on the negative side of the offset, in the range
         /// from - 10,000 through 10,000. If the device does not support separate
-        /// positive and negative coefficients, the value of lNegativeCoefficient 
-        /// is ignored, and the value of lPositiveCoefficient is used as both the 
+        /// positive and negative coefficients, the value of lNegativeCoefficient
+        /// is ignored, and the value of lPositiveCoefficient is used as both the
         /// positive and negative coefficients.
         /// </summary>
         public int negativeCoefficient;
         /// <summary>
         /// Maximum force output on the positive side of the offset, in the range
         /// from 0 through 10,000.
-        /// 
+        ///
         /// If the device does not support force saturation, the value of this
         /// member is ignored.
         /// </summary>
@@ -1343,14 +1347,14 @@ namespace DirectInputManager
         ///
         /// If the device does not support force saturation, the value of this member
         /// is ignored.
-        /// 
+        ///
         /// If the device does not support separate positive and negative saturation,
         /// the value of dwNegativeSaturation is ignored, and the value of dwPositiveSaturation
         /// is used as both the positive and negative saturation.
         /// </summary>
         public uint negativeSaturation;
         /// <summary>
-        /// Range about the center of the axis that is ignored by the effect. 
+        /// Range about the center of the axis that is ignored by the effect.
         /// This value is in the range from 0 through 10,000.
         /// </summary>
         public int deadband;  // Changed from uint to int to match native LONG type
