@@ -70,6 +70,7 @@ The community has tested and verified these devices do indeed work. Albeit not a
 | [Simagic Alpha-Mini](https://us.sim-motion.com/products/simagic-alpha-mini-wheel-base) | ✅ Verified    |
 | [Thrustmaster TX](https://eshop.thrustmaster.com/en_us/tx-racing-wheel-leather-edition.html) | ✅ Verified    |
 
+
 [comment]: <> (✅ 🔲)
 Note for pedals, only input readings were guaranteed to *likely* work fine.
 
