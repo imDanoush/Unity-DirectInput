@@ -26,7 +26,6 @@ The package will create a virtual device inside Unity's Input System. This devic
 
 This package requires the use of Unity's new Input System to ensure [com.unity.inputsystem](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html) is installed in the project. Install it via the package manager: 
 `Window -> Package Manager => Input System`
-Next, go to the [Releases section of this GitHub repository](https://github.com/imDanoush/Unity-DirectInput/releases) to download the latest plugin release. This release now includes **Unity Package Manager (UPM) support** for seamless installation and dependency management!
 
 ## Installation Options:
 
@@ -43,10 +42,6 @@ Next, go to the [Releases section of this GitHub repository](https://github.com/
 6. **Enter Git URL**: In the text box that appears, enter:
    ```
    https://github.com/imDanoush/Unity-DirectInput.git
-   ```
-   Or if the package is in a subfolder:
-   ```
-   https://github.com/imDanoush/Unity-DirectInput.git?path=/Plugin
    ```
 7. **Install**: Click the **Install** button and Unity will download and install the package
 
