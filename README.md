@@ -24,8 +24,8 @@ The package will create a virtual device inside Unity's Input System. This devic
 
 # Installation
 
-This package requires the use of Unity's new Input System to ensure [com.unity.inputsystem](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html) is installed in the project. Install it via the package manager: 
-`Window -> Package Manager => Input System`
+> Prerequisite: This package requires the use of Unity's new Input System to ensure [com.unity.inputsystem](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html) is installed in the project. Install it via the package manager: 
+`Window -> Package Manager => Input System`, Recommended only to activate and use this Input System.
 
 ## Installation Options:
 
