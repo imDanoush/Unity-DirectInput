@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "DirectInputExplorer": {
-      "commandName": "Project",
-      "nativeDebugging": true
-    }
-  }
-}

@@ -1,9 +1,15 @@
 {
-  "name": "com.mrtimcakes.directinput",
-  "displayName": "Unity DirectInput",
-  "version": "1.0.0",
-  "unity": "2022.3",
-  "description": "Unity Native Plugin to expose DirectX DirectInput & ForceFeedback",
+  "name": "com.directinput.unity",
+  "displayName": "DirectInput",
+  "version": "1.0.1",
+  "unity": "2017.0",
+  "description": "Native Plugin to expose DirectX DirectInput & ForceFeedback",
+  "documentationUrl": "https://github.com/imDanoush/Unity-DirectInput",
+  "changelogUrl": "https://github.com/imDanoush/Unity-DirectInput/commits/main/",
+  "licensesUrl": "https://github.com/imDanoush/Unity-DirectInput/blob/main/LICENSE",
+  "dependencies": {
+    "com.unity.inputsystem": "1.0.2"
+  },
   "keywords": [
     "direct",
     "input",
@@ -23,25 +29,20 @@
     "flightsim",
     "gamepad"
   ],
-  "type": "module",
-  "dependencies": {
-    "com.unity.inputsystem": "1.0.2"
-  },
-  "hideInEditor": false,
-  "unityRelease": "4f1",
   "author": {
-    "name": "MrTimcakes, ImDanOush",
-    "email": "MrTimcakes@MrTimcakes.com",
-    "url": "https://www.MrTimcakes.com"
+    "name": "MrTimcakes, ImDanOush"
   },
-  "license": "LGPL-3.0-only",
-  "licensesUrl": "https://github.com/MrTimcakes/Unity-DirectInput/blob/main/LICENSE",
-  "documentationUrl": "https://github.com/MrTimcakes/Unity-DirectInput/wiki",
   "samples": [
     {
-        "displayName": "Input System Inspector FFB Demo",
-        "description": "Sample for reading and controlling an FFB Device via the Inspector",
-        "path": "Plugin/Samples~/InputSystem"
+      "displayName": "Fundamental Example",
+      "description": "An example scene to get into how to use the Direct Input API for DirectInput and ForceFeedback Devices",
+      "path": "Samples~/example"
+	},
+    {
+      "displayName": "NWH Vehicle Physics 2 FFB Sample Demo",
+      "description": "An example to learn and actually use this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2, You need to import the vehicle physics assets first!",
+      "path": "Samples~/nwhvp"
     }
-  ]
+  ],
+  "hideInEditor": false
 }
