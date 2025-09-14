@@ -1,48 +1,48 @@
 {
-  "name": "com.mrtimcakes.directinput",
+  "name": "com.directinput.unity",
   "displayName": "DirectInput",
-  "version": "1.0.0",
-  "unity": "2022.3",
+  "version": "1.0.1",
+  "unity": "2017.0",
   "description": "Native Plugin to expose DirectX DirectInput & ForceFeedback",
-  "unityRelease": "4f1",
-  "documentationUrl": "https://example.com/",
-  "changelogUrl": "https://example.com/changelog.html",
-  "licensesUrl": "https://github.com/MrTimcakes/Unity-DirectInput/blob/main/LICENSE",
-  "dependencies": 
-  {
+  "documentationUrl": "https://github.com/imDanoush/Unity-DirectInput",
+  "changelogUrl": "https://github.com/imDanoush/Unity-DirectInput/commits/main/",
+  "licensesUrl": "https://github.com/imDanoush/Unity-DirectInput/blob/main/LICENSE",
+  "dependencies": {
     "com.unity.inputsystem": "1.0.2"
   },
- "keywords": [
-  "direct",
-  "input",
-  "directinput",
-  "ffb",
-  "force",
-  "feedback",
-  "forcefeedback",
-  "steering",
-  "wheel",
-  "peripheral",
-  "joystick",
-  "sim",
-  "simracing",
-  "driving",
-  "flight",
-  "flightsim",
-  "gamepad"
+  "keywords": [
+    "direct",
+    "input",
+    "directinput",
+    "ffb",
+    "force",
+    "feedback",
+    "forcefeedback",
+    "steering",
+    "wheel",
+    "peripheral",
+    "joystick",
+    "sim",
+    "simracing",
+    "driving",
+    "flight",
+    "flightsim",
+    "gamepad"
   ],
-  "author": 
-  {
-    "name": "MrTimcakes, ImDanOush",
-    "email": "MrTimcakes@MrTimcakes.com",
-    "url": "https://www.MrTimcakes.com"
+  "author": {
+    "name": "MrTimcakes, ImDanOush"
   },
   "samples": [
     {
-      "displayName": "Sample Scene",
-      "description": "Sample Scene",
-      "path": "Samples~/"
+      "displayName": "Fundamental Example",
+      "description": "An example scene to get into how to use the Direct Input API for DirectInput and ForceFeedback Devices",
+      "path": "Samples~/example"
+	},
+    {
+      "displayName": "NWH Vehicle Physics 2 FFB Sample Demo",
+      "description": "An example to learn and actually use this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2, You need to import the vehicle physics assets first!",
+      "path": "Samples~/nwhvp"
     }
-  ]
+  ],
+  "hideInEditor": false
 }
-

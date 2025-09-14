@@ -161,7 +161,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d  "$(OutDir)\*.dll" "$(SolutionDir)..\Plugin\DLL"</Command>
+      <Command>xcopy "$(OutDir)DirectInputForceFeedback.dll" "$(ProjectDir)..\..\..\Runtime\Plugins\DLL\" /Y /I</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

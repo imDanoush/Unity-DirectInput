@@ -248,7 +248,7 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver
         GenerateISLayouts();                                                                                  // Create InputSystem Layouts for the DI Devices
         AddAllDIDevicesToIS();                                                                                // Create InputSystem Devices for the DI Devices
         isFullyDone = true;
-        Debug.Log("vInput for DInput is fully ready.");
+        Debug.Assert(isFullyDone == true, "DirectInputDevice has NOT been Initiated therefore Direct Input Is NOT Ready!!");
     }
 
     public static void GenerateISLayouts()

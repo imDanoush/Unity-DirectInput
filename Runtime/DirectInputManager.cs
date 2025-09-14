@@ -9,9 +9,11 @@ using System.Security.Cryptography;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+#if UNITY_EDITOR
 using UnityEditor.PackageManager;
-using UnityEngine;
+#endif
 #if UNITY_STANDALONE_WIN
+using UnityEngine;
 using UnityEngine;
 #endif
 
@@ -19,10 +21,11 @@ namespace DirectInputManager
 {
     class Native
     {
-#if UNITY_STANDALONE_WIN
+#if UNITY_64 // meaning if it is a Unity build, to avoid Unity in wrong build modes (e.g. unsupported platforms like Android) throwing errors.
+             // Note that this a Windows 64 bit only asset! Though any game built for Windows 64bit may be playable via emulators on Linux.
         const string DLLFile = @"DirectInputForceFeedback.dll";
 #else
-        private const string DLLFile = "DirectInputForceFeedback";
+        const string DLLFile = @"..\..\..\..\..\..\Runtime\Plugins\DLL\DirectInputForceFeedback.dll";
 #endif
         [DllImport(DLLFile, CharSet = CharSet.Ansi, EntryPoint = "UpdateConstantForce")]
         internal static extern int UpdateConstantForceSimple([MarshalAs(UnmanagedType.LPStr)] string guidInstance, int magnitude);
@@ -131,9 +134,7 @@ namespace DirectInputManager
         //////////////////////////////////////////////////////////////
         // Cross Platform "Macros" - Allows lib to work in Visual Studio & Unity
         //////////////////////////////////////////////////////////////
-//Need this to work when target build is set to android, adding Android temporarily
-//TODO: FIX Unity_Android
-#if UNITY_STANDALONE_WIN || UNITY_ANDROID
+#if UNITY_STANDALONE_WIN
         private static uint ClampAgnostic(uint value, uint min, uint max) => (uint)Mathf.Clamp(value, min, max);
         private static int ClampAgnostic(int value, int min, int max) => Mathf.Clamp(value, min, max);
 

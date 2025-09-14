@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <Compile Include="..\..\Plugin\DirectInputManager.cs" Link="DirectInputManager.cs">
+    <Compile Include="..\..\..\Runtime\DirectInputManager.cs" Link="DirectInputManager.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
