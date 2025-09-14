@@ -6,7 +6,6 @@
 This package allows you to easily integrate both the input and ForceFeedback features of DirectX DirectInput from within Unity. This allows you to interface with HID peripherals with ForceFeedback capabilities. This can be used to build vivid simulated experiences.
 
 ### Easy Installation via Package Manager + Sample Demos
-![image](https://github.com/user-attachments/assets/fcd321cb-7b7c-437a-b033-d80a78576f99)
 ![image](https://github.com/user-attachments/assets/b9ca5989-623a-48bb-9f98-d0ff99588fbd)
 ### Fully integrated with Unity's Input System, Supports _any_ Direct Input Device
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com)
@@ -16,6 +15,9 @@ This package allows you to easily integrate both the input and ForceFeedback fea
 ![GitHub](https://img.shields.io/github/license/ImDanOush/Unity-DirectInput?style=for-the-badge)
 
 The package will create a virtual device inside Unity's Input System. This device can then be used like any other device inside the Input System, allowing for easy rebinding. ForceFeedback capabilities can be accessed via the DIManager class. The [DirectInputExplorer](https://github.com/imDanoush/Unity-DirectInput/tree/main/src~/DirectInputExplorer~) is a Windows Forms application built in parallel with the C++ library to enable quick development by avoiding the need to reload Unity after every change. It also functions as an easy way to examine DirectInput devices.
+
+![image](https://github.com/user-attachments/assets/fcd321cb-7b7c-437a-b033-d80a78576f99)
+
 
 # Quick Start
 ![image](https://github.com/user-attachments/assets/12feffae-5311-4603-a983-fee9ed45e372)
@@ -119,7 +121,7 @@ Note for pedals, only input readings were guaranteed to *likely* work fine.
 
 ## Environment
 
-- Latest verified Unity version: 2022.3
+- Any Unity version that is using the .NET C# v5 should work
 
 ### Windows Version Support
 The DirectInputManager should run on Windows 10 22H2 and newer (e.g., Windows 11) out of the box. The DirectInput API is available on these modern Windows versions without additional packages.
