@@ -11,10 +11,10 @@
 ![GitHub](https://img.shields.io/github/license/ImDanOush/Unity-DirectInput?style=for-the-badge)
 
 ![Unity-DirectInput Banner](https://github.com/MrTimcakes/Unity-DirectInput/blob/assets/UnityDirectInputBanner.png )
-## [Try the Unity Windows build Demo here!](https://github.com/imDanoush/Unity-DirectInput/releases/tag/v1.0_Demo)
+## [Try the Unity Windows build Demo here!](https://drive.google.com/file/d/1HzcTwQwOgYUiSUoL4gZVoGvN_p8nUcLk/view)
 This package allows you to easily integrate both the input and ForceFeedback features of DirectX DirectInput from within Unity. This allows you to interface with HID peripherals with ForceFeedback capabilities. This can be used to build vivid simulated experiences.
 
-The package will create a virtual device inside Unity's Input System. This device can then be used like any other device inside the Input System, allowing for easy rebinding. ForceFeedback capabilities can be accessed via the DIManager class. The [DirectInputExplorer](../../tree/main/DirectInputExplorer~) is a Windows forms application built in parallel with the C++ library to enable quick development by avoiding the need to reload Unity after every change. It also functions as an easy way to examine DirectInput devices.
+The package will create a virtual device inside Unity's Input System. This device can then be used like any other device inside the Input System, allowing for easy rebinding. ForceFeedback capabilities can be accessed via the DIManager class. The [DirectInputExplorer](../../tree/main/DirectInputExplorer~) is a Windows Forms application built in parallel with the C++ library to enable quick development by avoiding the need to reload Unity after every change. It also functions as an easy way to examine DirectInput devices.
 
 # Quick Start
 ![image](https://github.com/user-attachments/assets/12feffae-5311-4603-a983-fee9ed45e372)
@@ -27,16 +27,45 @@ Next, go to the [Releases section of this GitHub repository](https://github.com/
 
 ## Installation Options:
 
-### **Recommended: Unity Package Manager**
-- **Easy Installation**: Use Unity's built-in Package Manager to install directly, and select any of the samples in the Samples tab to install and use!
+### 🎯 **Recommended: Unity Package Manager (Git URL)**
 
-### **Alternative: Manual Installation**
-- Download and extract the plugin package with samples and examples
-- Or copy the `Plugin` folder directly into your Unity project's `Assets` folder and import the included UnityPackage
+**Step-by-step UPM installation:**
 
-After installation via either method, restart Unity to ensure proper DLL loading and access to the new runtime UI features.
+1. **Prerequisites**: Ensure you have [Git client](https://git-scm.com/) installed (minimum version 2.14.0)
+   - On Windows, add Git to your PATH environment variable
+2. **Open Unity**: Launch your Unity project where you want to install the plugin
+3. **Access Package Manager**: Go to **Window > Package Manager** in the Unity menu bar
+4. **Add package**: Click the **+** (plus) button in the top-left corner of the Package Manager window
+5. **Select installation method**: Choose **"Install package from git URL"** from the dropdown menu
+6. **Enter Git URL**: In the text box that appears, enter:
+   ```
+   https://github.com/imDanoush/Unity-DirectInput.git
+   ```
+   Or if the package is in a subfolder:
+   ```
+   https://github.com/imDanoush/Unity-DirectInput.git?path=/Plugin
+   ```
+7. **Install**: Click the **Install** button and Unity will download and install the package
 
-> **Note:** Folders ending with `~` are excluded by Unity and contain the standalone Windows ForceFeedback Explorer application at `./DirectInputExplorer~\DirectInputExplorer\bin\Release\net5.0-windows` for advanced testing.
+**Benefits of UPM Git installation:**
+- ✅ Direct installation from GitHub repository
+- ✅ Automatic updates when you push new versions
+- ✅ Clean project structure with proper dependency management
+- ✅ Easy to share across team members
+- ✅ Version control integration
+
+### 📁 **Alternative: Manual Installation**
+
+If you prefer manual installation or don't have Git installed:
+- Download the plugin package from the Releases section
+- Copy the `Plugin` folder from this repository directly into your Unity project's `Assets` folder
+- Import the example UnityPackage included with the plugin
+
+### 🔄 **After Installation**
+
+Regardless of installation method, **restart Unity** to ensure proper DLL loading and access to the new runtime UI features.
+
+> **Note:** Folders ending with `~` are excluded by Unity during import and contain the Windows ForceFeedback Explorer application located at `./DirectInputExplorer~\DirectInputExplorer\bin\` for advanced device testing and configuration.
 
 ## Supported ForceFeedback Effects
 
@@ -58,8 +87,9 @@ After installation via either method, restart Unity to ensure proper DLL loading
 | Rear Collision   	| ✅ |
 | Left Collision  	| ✅ |
 | RightCollision  	| ✅ |
+
 [comment]: <> (✅ ℹ️ 🔲)
-Note that everything is adjustable in the native DLL, The Custom Force effect exists but has not been fully implemented, And the collision effects are only in the Unity project. This is optimized to be used in Unity Game Engine only.
+Note that everything is adjustable in the native DLL. The Custom Force effect exists but has not been fully implemented, and the collision effects are only in the Unity project. This is optimized to be used in the Unity Game Engine only.
 
 ## Compatible Devices
 ### Note that all the devices that use Direct Input (from the old Logitech G wheels to the advanced Simucube ones) should work
@@ -82,6 +112,7 @@ The community has tested and verified that these devices do indeed work. Albeit 
 | [PRO Racing Wheel](https://www.logitechg.com/en-gb/products/driving/pro-racing-wheel.html) | ✅ Verified    |
 | [Simagic Alpha-Mini](https://us.sim-motion.com/products/simagic-alpha-mini-wheel-base) | ✅ Verified    |
 | [Thrustmaster TX](https://eshop.thrustmaster.com/en_us/tx-racing-wheel-leather-edition.html) | ✅ Verified    |
+
 [comment]: <> (✅ 🔲)
 Note for pedals, only input readings were guaranteed to *likely* work fine.
 
