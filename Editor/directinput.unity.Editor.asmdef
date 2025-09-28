@@ -3,6 +3,7 @@
     "rootNamespace": "DirectInputManager.Editor",
     "references": [],
     "includePlatforms": [
+        "Editor",
         "WindowsStandalone64"
     ],
     "excludePlatforms": [],
