@@ -35,12 +35,17 @@
   "samples": [
     {
       "displayName": "Fundamental Example",
-      "description": "An example scene to get into how to use the Direct Input API for DirectInput and ForceFeedback Devices",
+      "description": "Use this demo to understand how to use the Direct Input API for DirectInput and ForceFeedback Devices using its IMGUI-based UI covering all the features.",
       "path": "Samples~/example"
 	},
     {
+      "displayName": "Simple UGUI Example",
+      "description": "An sample scene to learn and actually use this in your projects using a simple key-binding UGUI menu with understanding the key points!",
+      "path": "Samples~/simple"
+    },
+    {
       "displayName": "NWH Vehicle Physics 2 FFB Sample Demo",
-      "description": "An example to learn and actually use this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2, You need to import the vehicle physics assets first!",
+      "description": "Uncover how to utilize this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2, You need to import the vehicle physics assets first!",
       "path": "Samples~/nwhvp"
     }
   ],
