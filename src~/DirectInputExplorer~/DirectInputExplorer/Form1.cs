@@ -351,10 +351,11 @@ namespace DirectInputExplorer
                 // Get the effect checkbox
 
                 // First destroy any existing periodic effect
-                foreach (FFBEffects effects in new FFBEffects[] { FFBEffects.SawtoothUp, FFBEffects.SawtoothDown, FFBEffects.Square,
-                                                                  FFBEffects.Triangle, FFBEffects.RampForce, FFBEffects.Sine})
+                foreach (FFBEffects effects in new FFBEffects[] { FFBEffects.SawtoothUp, FFBEffects.SawtoothDown,
+                                                   FFBEffects.Square, FFBEffects.Triangle,
+                                                   FFBEffects.RampForce, FFBEffects.Sine })
                 {
-                    DIManager.DestroyFFBEffect(activeDevice, effectType);
+                    DIManager.DestroyFFBEffect(activeDevice, effects); // ← correct loop variable
                 }
                 // Then create new effect
                 if (!DIManager.EnableFFBEffect(activeDevice, effectType))

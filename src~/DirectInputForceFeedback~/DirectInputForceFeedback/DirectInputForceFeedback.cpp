@@ -171,6 +171,12 @@ DIRECTINPUTFORCEFEEDBACK_API DeviceInfo* EnumerateDevices(int& deviceCount) {
 			SetLastErrorMessage("DirectInput not initialized");
 			return nullptr;
 		}
+		for (auto& device : _DeviceInstances) {
+			SafeStrFree(device.guidInstance);
+			SafeStrFree(device.guidProduct);
+			SafeStrFree(device.instanceName);
+			SafeStrFree(device.productName);
+		}
 		_DeviceInstances.clear();
 		hr = _DirectInput->EnumDevices(
 			DI8DEVCLASS_GAMECTRL,
@@ -327,6 +333,8 @@ DIRECTINPUTFORCEFEEDBACK_API HRESULT DestroyDevice(LPCSTR guidInstance) {
 		}
 		device->Release();
 		_ActiveDevices.erase(GUIDString);
+		_DeviceFFBAxes.erase(GUIDString);
+		_DeviceEnumeratedEffects.erase(GUIDString);
 		LogMessage("DestroyDevice: Device destroyed successfully");
 		return S_OK;
 	}
@@ -934,11 +942,53 @@ DIRECTINPUTFORCEFEEDBACK_API HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effec
 			LogMessage("DestroyFFBEffect: Effect not found (already destroyed)");
 			return S_OK;
 		}
+		auto freeEffectMemory = [&]() {
+			if (_DeviceFFBEffectConfig[GUIDString].contains(effectType)) {
+				auto& effectConfig = _DeviceFFBEffectConfig[GUIDString][effectType];
+				switch (effectType) {
+				case Effects::Type::ConstantForce:
+					delete static_cast<DICONSTANTFORCE*>(effectConfig.lpvTypeSpecificParams);
+					break;
+				case Effects::Type::Spring:
+				case Effects::Type::Damper:
+				case Effects::Type::Friction:
+				case Effects::Type::Inertia:
+					delete[] static_cast<DICONDITION*>(effectConfig.lpvTypeSpecificParams);
+					break;
+				case Effects::Type::Sine:
+				case Effects::Type::Square:
+				case Effects::Type::Triangle:
+				case Effects::Type::SawtoothUp:
+				case Effects::Type::SawtoothDown:
+					delete static_cast<DIPERIODIC*>(effectConfig.lpvTypeSpecificParams);
+					break;
+				case Effects::Type::RampForce:
+					delete static_cast<DIRAMPFORCE*>(effectConfig.lpvTypeSpecificParams);
+					break;
+				case Effects::Type::CustomForce: {
+					auto* cf = static_cast<DICUSTOMFORCE*>(effectConfig.lpvTypeSpecificParams);
+					if (cf) {
+						delete[] cf->rglForceData;
+						delete cf;
+					}
+					break;
+				}
+				default:
+					break;
+				}
+				effectConfig.lpvTypeSpecificParams = nullptr;
+				delete[] effectConfig.rgdwAxes;
+				effectConfig.rgdwAxes = nullptr;
+				delete[] effectConfig.rglDirection;
+				effectConfig.rglDirection = nullptr;
+				_DeviceFFBEffectConfig[GUIDString].erase(effectType);
+			}
+			};
 		LPDIRECTINPUTEFFECT diEffect = _DeviceFFBEffectControl[GUIDString][effectType];
 		if (!diEffect) {
 			LogMessage("DestroyFFBEffect: Effect control is null");
+			freeEffectMemory();
 			_DeviceFFBEffectControl[GUIDString].erase(effectType);
-			_DeviceFFBEffectConfig[GUIDString].erase(effectType);
 			return E_POINTER;
 		}
 		HRESULT hr = diEffect->Stop();
@@ -953,8 +1003,8 @@ DIRECTINPUTFORCEFEEDBACK_API HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effec
 		if (refCount > 0) {
 			LogMessage("DestroyFFBEffect: Warning: Effect released but refCount = %lu", refCount);
 		}
+		freeEffectMemory();
 		_DeviceFFBEffectControl[GUIDString].erase(effectType);
-		_DeviceFFBEffectConfig[GUIDString].erase(effectType);
 		LogMessage("DestroyFFBEffect: Effect destroyed successfully");
 		return S_OK;
 	}
@@ -1800,11 +1850,11 @@ GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance) {
 FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState) {
 	FlatJoyState2 state = {};
 	for (int i = 0; i < 64; i++) {
-		if (DeviceState.rgbButtons[i] == 128)
+		if (DeviceState.rgbButtons[i] & 0x80)
 			state.buttonsA |= (unsigned long long)1 << i;
 	}
 	for (int i = 64; i < 128; i++) {
-		if (DeviceState.rgbButtons[i] == 128)
+		if (DeviceState.rgbButtons[i] & 0x80)
 			state.buttonsB |= (unsigned long long)1 << (i - 64);
 	}
 	auto ClampToUInt16 = [](LONG value) -> uint16_t {
@@ -1844,15 +1894,15 @@ FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState) {
 	state.lFRz = ClampToUInt16(DeviceState.lFRz);
 	for (int i = 0; i < 4; i++) {
 		DWORD pov = DeviceState.rgdwPOV[i];
-		if (pov == 0xFFFFFFFF) continue;
+		if (LOWORD(pov) == 0xFFFF) continue;
 		if (pov < 4500 || pov >= 31500)
-			state.rgdwPOV |= (BYTE)(1 << (i * 4 + 0));
+			state.rgdwPOV |= (uint16_t)(1 << (i * 4 + 0));
 		if (pov >= 4500 && pov < 13500)
-			state.rgdwPOV |= (BYTE)(1 << (i * 4 + 3));
+			state.rgdwPOV |= (uint16_t)(1 << (i * 4 + 3));
 		if (pov >= 13500 && pov < 22500)
-			state.rgdwPOV |= (BYTE)(1 << (i * 4 + 1));
+			state.rgdwPOV |= (uint16_t)(1 << (i * 4 + 1));
 		if (pov >= 22500 && pov < 31500)
-			state.rgdwPOV |= (BYTE)(1 << (i * 4 + 2));
+			state.rgdwPOV |= (uint16_t)(1 << (i * 4 + 2));
 	}
 	return state;
 }
@@ -1921,7 +1971,12 @@ DWORD AxisTypeToDIJOFS(GUID axisType) {
 	else if (axisType == GUID_RzAxis) {
 		return DIJOFS_RZ;
 	}
-	return 0;
+	else if (axisType == GUID_Slider) {
+		LogMessage("AxisTypeToDIJOFS: GUID_Slider detected; mapping to DIJOFS_SLIDER(0) as default");
+		return DIJOFS_SLIDER(0);
+	}
+	LogMessage("AxisTypeToDIJOFS: Unrecognized axis GUID; defaulting to DIJOFS_X which may cause incorrect FFB axis targeting");
+	return DIJOFS_X;
 }
 GUID EffectTypeToGUID(Effects::Type effectType) {
 	switch (effectType) {

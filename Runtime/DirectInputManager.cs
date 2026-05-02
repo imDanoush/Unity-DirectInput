@@ -126,7 +126,7 @@ namespace DirectInputManager
         // Static delegate instances to prevent garbage collection
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE0052 // Remove unread private members
-        private static DeviceChangeCallback s_deviceChangeCallback;
+        private static Native.DeviceChangeCallback s_deviceChangeCallback;
 #pragma warning restore IDE0052 // Remove unread private members
 #pragma warning restore IDE0079 // Remove unnecessary suppression
 
@@ -191,7 +191,7 @@ namespace DirectInputManager
 #endif
                 if (Native.StartDirectInput() != 0) { return _isInitialized = false; }
                 s_deviceChangeCallback = OnDeviceChange;
-                Native.SetDeviceChangeCallback(OnDeviceChange);
+                Native.SetDeviceChangeCallback(s_deviceChangeCallback);
                 return _isInitialized = true;
             }
             catch (Exception ex)
@@ -568,7 +568,7 @@ namespace DirectInputManager
         /// This function invokes the necessary events
         /// </summary>
 #if UNITY_STANDALONE_WIN
-        [AOT.MonoPInvokeCallback(typeof(DeviceChangeCallback))]
+        [AOT.MonoPInvokeCallback(typeof(Native.DeviceChangeCallback))]
 #endif
         private static void OnDeviceChange(DBTEvents DBTEvent)
         {
