@@ -488,3 +488,8 @@ Temporary Items
 # Ignore "InteropTests/NativeTests/out"
 InteropTests/NativeTests/out
 /src/System.Windows.Forms/src/comctl32.dll
+/src~/DirectInputForceFeedback~/DirectInputForceFeedback/x64/Release/DirectInputForceFeedback.dll.recipe
+/src~/DirectInputForceFeedback~/DirectInputForceFeedback/x64/Release/DirectInputForceFeedback.vcxproj.FileListAbsolute.txt
+/src~/DirectInputForceFeedback~/x64/Release/DirectInputForceFeedback.dll
+/src~/DirectInputForceFeedback~/x64/Release/DirectInputForceFeedback.exp
+/src~/DirectInputForceFeedback~/x64/Release/DirectInputForceFeedback.lib
