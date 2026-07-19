@@ -1,9 +1,9 @@
 {
   "name": "com.directinput.unity",
   "displayName": "DirectInput",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "unity": "2017.0",
-  "description": "Native Plugin to expose DirectX DirectInput & ForceFeedback",
+  "description": "A native Direct Input plugin to expose DirectX Input & ForceFeedback for Unity",
   "documentationUrl": "https://github.com/imDanoush/Unity-DirectInput",
   "changelogUrl": "https://github.com/imDanoush/Unity-DirectInput/commits/main/",
   "licensesUrl": "https://github.com/imDanoush/Unity-DirectInput/blob/main/LICENSE",
@@ -30,7 +30,7 @@
     "gamepad"
   ],
   "author": {
-    "name": "MrTimcakes, ImDanOush"
+    "name": "ImDanOush, MrTimcakes"
   },
   "samples": [
     {
@@ -40,12 +40,12 @@
 	},
     {
       "displayName": "Simple UGUI Example",
-      "description": "An sample scene to learn and actually use this in your projects using a simple key-binding UGUI menu with understanding the key points!",
+      "description": "(Don't import both Examples at once!) Another example demo to learn and actually use this in your projects using a simple key-binding UGUI menu with understanding the key points!",
       "path": "Samples~/simple"
     },
     {
-      "displayName": "NWH Vehicle Physics 2 FFB Sample Demo",
-      "description": "Uncover how to utilize this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2, You need to import the vehicle physics assets first!",
+      "displayName": "NWH Vehicle Physics 2 v13 FFB Sample Demo",
+      "description": "(Needs one of the above example demo assets) Uncover how to utilize this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2 v13, You need to import the vehicle physics assets first!",
       "path": "Samples~/nwhvp"
     }
   ],

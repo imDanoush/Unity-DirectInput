@@ -14,7 +14,6 @@ using UnityEditor.PackageManager;
 #endif
 #if UNITY_STANDALONE_WIN
 using UnityEngine;
-using UnityEngine;
 #endif
 
 namespace DirectInputManager
@@ -92,11 +91,6 @@ namespace DirectInputManager
 
         [DllImport(DLLFile, CharSet = CharSet.Ansi)]
         internal static extern int StopAllFFBEffects([MarshalAs(UnmanagedType.LPStr)] string guidInstance);
-
-
-        [DllImport(DLLFile, CharSet = CharSet.Ansi)]
-        internal static extern int DEBUG1([MarshalAs(UnmanagedType.LPStr)] string guidInstance,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
 #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
 #pragma warning restore IDE0079 // Remove unnecessary suppression
 
@@ -161,7 +155,7 @@ namespace DirectInputManager
 
         private static bool _isInitialized = false;               // is DIManager ready
         private static DeviceInfo[] _devices = Array.Empty<DeviceInfo>(); // Hold data for devices plugged in
-        private static readonly Dictionary<string, ActiveDeviceInfo> _activeDevices = new(); // Hold data for devices actively attached
+        private static readonly Dictionary<string, ActiveDeviceInfo> _activeDevices = new Dictionary<string, ActiveDeviceInfo>(); // Hold data for devices actively attached
 
         //////////////////////////////////////////////////////////////
         // Public Variables
@@ -249,7 +243,12 @@ namespace DirectInputManager
             if (_activeDevices.ContainsKey(guidInstance)) { return true; } // We're already attached to that device
             int hresult = Native.CreateDevice(guidInstance);
             if (hresult != 0) { DebugLog($"CreateDevice Failed: 0x{hresult:x} {WinErrors.GetSystemMessage(hresult)} {guidInstance}"); return false; }
-            DeviceInfo device = _devices.Where(device => device.guidInstance == guidInstance).First();
+            DeviceInfo device = _devices.FirstOrDefault(d => d.guidInstance == guidInstance);
+            if (device.guidInstance == null)
+            {
+                DebugLog($"Attach: GUID {guidInstance} not in _devices, enumerate first.");
+                return false;
+            }
             _activeDevices.Add(guidInstance, new ActiveDeviceInfo() { deviceInfo = device }); // Add device to our C# active device tracker (Dictionary allows us to easily check if GUID already exists)
             return true;
         }
@@ -480,9 +479,11 @@ namespace DirectInputManager
         /// </returns>
         public static byte[] FlatStateMD5(FlatJoyState2 state)
         {
-            using MD5 md5 = MD5.Create();
-            var StateRawBytes = FlatStateToBytes(state);
-            return md5.ComputeHash(StateRawBytes);
+            using (MD5 md5 = MD5.Create())
+            {
+                var StateRawBytes = FlatStateToBytes(state);
+                return md5.ComputeHash(StateRawBytes);
+            }
         }
 
         /// <summary>
@@ -531,20 +532,6 @@ namespace DirectInputManager
         {
             return _activeDevices.TryGetValue(guidInstance, out ADI);
         }
-
-        /// <summary>
-        /// *Internal use only*
-        /// Used to test C++ code in the DLL during devlopment
-        /// </summary>
-        // public static string[] DEBUG1() {
-        //   string[] DEBUGDATA = null;
-        //   DEBUGDATA = new string[1] { "Test" };
-        //   int hresult = Native.DEBUG1(out DEBUGDATA);
-        //   if (hresult != 0) { DebugLog($"DEBUG1 Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
-
-        //   return DEBUGDATA;
-        // }
-
 
         //////////////////////////////////////////////////////////////
         // Device Events
@@ -1216,7 +1203,7 @@ namespace DirectInputManager
                     CancelTokens = new List<CancellationTokenSource>();            // Empty List
                     lock (_lockThis) { TargetAction(); }                           // Excute Action
                 }
-            }, TaskScheduler.FromCurrentSynchronizationContext());             // Perform on current thread
+            }, TaskScheduler.Default);          // Perform on main thread
         }
 
         private void CancelAllTokens()
@@ -1449,7 +1436,7 @@ namespace DirectInputManager
         public UInt16 lFRy;     // Y-axis torque
         public UInt16 lFRz;     // Z-axis torque
         public UInt16 rgdwPOV;  // Store each DPAD in chunks of 4 bits inside 16-bit UInt
-        public override readonly int GetHashCode()
+        public override int GetHashCode()
         {
             return BitConverter.ToInt32(DIManager.FlatStateMD5(this), 0);
         }

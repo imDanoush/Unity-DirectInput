@@ -211,7 +211,7 @@ public struct FlatJoyState2State : IInputStateTypeInfo
     [InputControl(name = "dpad3/down", bit = 13, displayName = "Down")]
     [InputControl(name = "dpad3/left", bit = 14, displayName = "Left")]
     [InputControl(name = "dpad3/right", bit = 15, displayName = "Right")]
-    public UInt16 rgdwPOV; // Store each DPAD in chunks of 4 bits inside a 16-bit Unsigned integer   
+    public UInt16 rgdwPOV; // Store each DPAD in chunks of 4 bits inside a 16-bit Unsigned integer
 }
 
 //////////////////////////////////////////////////////////////
@@ -242,7 +242,7 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver
             return;
         isFullyDone = false;
         DIManager.Initialize();                                                                               // Start DirectInput if it's not already
-        DIManager.EnumerateDevices();                                                                         // Scan for available devices 
+        DIManager.EnumerateDevices();                                                                         // Scan for available devices
                                                                                                               // await DIManager.EnumerateDevicesAsync();                                                           // Async allows to detect enumeration issues but causes issues with domain reloads as await yields and processes devices before layouts can be built
         DIManager.OnDeviceAdded += DIDeviceAdded;                                                             // Register handler for when a device is attached
         GenerateISLayouts();                                                                                  // Create InputSystem Layouts for the DI Devices
@@ -285,7 +285,7 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver
 
     public void OnUpdate()
     {
-        DIManager.Poll(this.description.serial); // TODO: Make ASYNC 
+        DIManager.Poll(this.description.serial);
     }
 
     public static bool AddDIDeviceToIS(DeviceInfo device)
@@ -305,7 +305,7 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver
             }
             catch
             {
-                Debug.LogWarning($"While D-Input Manager can handle, the Unity's new Input System can not handle and add the {device.productName} into their list, probably that is not Direct Input and might be an X-Input device!\nTherefore, DInput Manager skips this input device.");
+                Debug.Log($"While D-Input Manager can handle, the Unity's new Input System can not handle and add the {device.productName} into their list, probably that is not Direct Input and might be an X-Input device!\nTherefore, DInput Manager skips this input device.");
                 DIManager.Destroy(device);
                 return false;
             }
