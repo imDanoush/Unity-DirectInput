@@ -12,7 +12,7 @@
 
 ## Why This Repository Is Obsolete
 
-This repository (`MrTimcakes/Unity-DirectInput`) is the original forked codebase and is now **archived**. This began as a pull request against this repository but has since evolved into an entirely independent project. It is no longer maintained and has not received updates in a significant amount of time.
+The repository `MrTimcakes/Unity-DirectInput` is the original codebase that had been unmaintained for a long time. This repository began as a pull request against that repository but has since evolved into an entirely independent project; however, it is no longer maintained and has not received updates in a significant amount of time, and is **archived**.
 
 The current fork maintained by [**imDanoush**](https://github.com/imDanoush) became an entirely independent project — **hundreds of commits ahead** of this one. The architecture, feature set, and scope have changed so substantially that the two repositories share little beyond their origin.
 
