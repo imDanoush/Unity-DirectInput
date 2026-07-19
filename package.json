@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "com.directinput.unity",
   "displayName": "DirectInput",
   "version": "1.1.1",
@@ -10,6 +11,13 @@
   "dependencies": {
     "com.unity.inputsystem": "1.0.2"
   },
+=======
+  "name": "com.mrtimcakes.directinput",
+  "displayName": "Unity DirectInput",
+  "version": "1.0.0",
+  "unity": "2022.3",
+  "description": "Unity Native Plugin to expose DirectX DirectInput & ForceFeedback",
+>>>>>>> atg/main
   "keywords": [
     "direct",
     "input",

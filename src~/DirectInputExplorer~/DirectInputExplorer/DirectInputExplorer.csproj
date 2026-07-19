@@ -10,7 +10,11 @@
   </PropertyGroup>
   
   <ItemGroup>
+<<<<<<< HEAD:src~/DirectInputExplorer~/DirectInputExplorer/DirectInputExplorer.csproj
     <Compile Include="..\..\..\Runtime\DirectInputManager.cs" Link="DirectInputManager.cs">
+=======
+    <Compile Include="..\..\Plugin\DirectInputManager.cs" Link="DirectInputManager.cs">
+>>>>>>> atg/main:DirectInputExplorer~/DirectInputExplorer/DirectInputExplorer.csproj
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
