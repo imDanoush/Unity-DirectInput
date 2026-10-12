@@ -1,8 +1,8 @@
 {
   "name": "com.directinput.unity",
   "displayName": "DirectInput",
-  "version": "1.1.1",
-  "unity": "2017.0",
+  "version": "1.2.0",
+  "unity": "2021.2",
   "description": "A native Direct Input plugin to expose DirectX Input & ForceFeedback for Unity",
   "documentationUrl": "https://github.com/imDanoush/Unity-DirectInput",
   "changelogUrl": "https://github.com/imDanoush/Unity-DirectInput/commits/main/",
@@ -45,7 +45,7 @@
     },
     {
       "displayName": "NWH Vehicle Physics 2 v13 FFB Sample Demo",
-      "description": "(Needs one of the above example demo assets) Uncover how to utilize this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2 v13, You need to import the vehicle physics assets first!",
+      "description": "Uncover how to utilize this Direct Input API for DInput and ForceFeedback Devices for NWH Vehicle Physics 2 v13, You need to import the vehicle physics assets first!",
       "path": "Samples~/nwhvp"
     }
   ],

@@ -1,16 +1,26 @@
 {
     "name": "directinput.unity.Tests",
     "rootNamespace": "DirectInputManager.Tests",
-    "references": [],
+    "references": [
+        "directinput.unity",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
     "includePlatforms": [
+        "Editor",
         "WindowsStandalone64"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": true,
+    "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "UNITY_STANDALONE_WIN"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

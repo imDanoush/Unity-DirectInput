@@ -1,213 +1,283 @@
 /*
  *
- * Logger for Direct Input by ImDanOush (ATG-Simulator.com), Good for debugs and logs
+ * On-screen notifications for Direct Input by ImDanOush (ATG-Simulator.com), Good for debugs and logs
  *
  */
-using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
+using UnityEngine;
 
 namespace DirectInputManager
 {
+    /// <summary>
+    /// DirectInput notifications: every report goes to the Console once, and (unless disabled) to a card in the
+    /// top-right corner of the Game view. IMGUI, so it needs no assets, packages, EventSystem or input backend.
+    /// </summary>
     public class DirectInputLogger : MonoBehaviour
     {
-    public static DirectInputLogger Instance { get; private set; }
-    private static List<LogEntry> visualLogs = new();
-    private static Vector2 logScrollPosition;
-    private GUIStyle logHeaderStyle;
-    private GUIStyle logEntryStyle;
-    private GUIStyle logWindowStyle;
-    private bool stylesInitialized = false;
-    private float windowFadeout = 0f; // Used to fade out the window
+        /// <summary>
+        /// Show on-screen notifications (default true). Console logging is not affected.
+        /// Define DIRECTINPUT_DISABLE_TOASTS to compile the drawing out entirely.
+        /// </summary>
+        public static bool Enabled { get; set; } = true;
 
-    private class LogEntry
-    {
-        public string message;
-        public float time;
-        public float displayDuration = 7f;
+        public static DirectInputLogger Instance { get; private set; }
 
-        public LogEntry(string message)
+        /// <summary>
+        /// Reports a DirectInput problem or event. Callable from any thread, also before a scene loads:
+        /// it logs to the Console at once and queues the card for the main thread.
+        /// </summary>
+        public static void Report(DirectInputNotificationSeverity severity, string title, string details = null)
         {
-            this.message = message;
-            this.time = Time.time;
-        }
-
-        public bool IsExpired => (Time.time - time) > displayDuration;
-        public float Opacity => Mathf.Clamp01(1f - ((Time.time - time) / displayDuration));
-        public float RemainingTime => Mathf.Max(0, (time + displayDuration) - Time.time);
-    }
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    public static void AddLog(string message)
-    {
-        // Make sure the logger exists
-        EnsureLoggerExists();
-
-        // Add to visual logs
-        visualLogs.Add(new LogEntry(message));
-
-        // Send to console too
-        Debug.Log($"<color=#9416f9>[DirectInputManager]</color> <color=#ff0000>{message}</color>");
-
-        // Cap the log size to prevent memory issues
-        if (visualLogs.Count > 20)
-            visualLogs.RemoveAt(0);
-
-        // Reset window fade
-        if (Instance != null)
-            Instance.windowFadeout = 1f;
-    }
-
-    public static void EnsureLoggerExists()
-    {
-        if (Instance == null)
-        {
-            GameObject loggerObject = new("DirectInputLogger");
-            Instance = loggerObject.AddComponent<DirectInputLogger>();
-            DontDestroyOnLoad(loggerObject);
-        }
-    }
-
-    private void InitializeStyles()
-    {
-        if (stylesInitialized) return;
-
-        logWindowStyle = new GUIStyle();
-        logWindowStyle.normal.background = CreateColorTexture(new Color(0.15f, 0.15f, 0.15f, 0.9f));
-        logWindowStyle.border = new RectOffset(8, 8, 8, 8);
-        logWindowStyle.padding = new RectOffset(10, 10, 10, 10);
-
-        logHeaderStyle = new GUIStyle();
-        logHeaderStyle.fontSize = 12;
-        logHeaderStyle.fontStyle = FontStyle.Bold;
-        logHeaderStyle.normal.textColor = Color.white;
-        logHeaderStyle.margin = new RectOffset(0, 0, 0, 10);
-
-        logEntryStyle = new GUIStyle();
-        logEntryStyle.fontSize = 11;
-        logEntryStyle.wordWrap = true;
-        logEntryStyle.normal.background = CreateColorTexture(new Color(0.7f, 0.1f, 0.1f, 1f));
-        logEntryStyle.normal.textColor = Color.white;
-        logEntryStyle.padding = new RectOffset(8, 8, 6, 6);
-        logEntryStyle.margin = new RectOffset(0, 0, 2, 2);
-
-        stylesInitialized = true;
-    }
-
-    private Texture2D CreateColorTexture(Color color)
-    {
-        Texture2D tex = new(1, 1);
-        tex.SetPixel(0, 0, color);
-        tex.Apply();
-        return tex;
-    }
-
-    private void Update()
-    {
-        // Clean up expired logs
-        bool logsRemoved = false;
-        int beforeCount = visualLogs.Count;
-        visualLogs.RemoveAll(log => log.IsExpired);
-        logsRemoved = beforeCount > visualLogs.Count;
-
-        // If we have logs, keep window visible
-        if (visualLogs.Count > 0)
-        {
-            windowFadeout = 1f;
-
-            // Find the log with the shortest remaining time
-            float minRemainingTime = visualLogs.Min(log => log.RemainingTime);
-
-            // Start fading out the window when the last log is almost expired
-            if (visualLogs.Count == 1 && minRemainingTime < 1.0f)
+            string text = string.IsNullOrEmpty(details) ? "[DirectInput] " + title : "[DirectInput] " + title + "\n" + details;
+            if (severity == DirectInputNotificationSeverity.Error) { Debug.LogError(text); }
+            else if (severity == DirectInputNotificationSeverity.Warning) { Debug.LogWarning(text); }
+            else { Debug.Log(text); }
+#if !DIRECTINPUT_DISABLE_TOASTS
+            if (!Enabled || s_quitting) { return; }
+            lock (s_pending)
             {
-                windowFadeout = minRemainingTime;
+                if (s_pending.Count >= MaxStored) { s_pending.RemoveAt(0); }
+                s_pending.Add(new Pending { severity = severity, title = title, details = details });
             }
+            if (Thread.CurrentThread.ManagedThreadId == s_mainThread) { Drain(); }
+            else if (s_mainContext != null && Interlocked.Exchange(ref s_drainPosted, 1) == 0) { s_mainContext.Post(s_drainCallback, null); }
+#endif
         }
-        // If logs were just removed and now we have none, start fading out
-        else if (logsRemoved)
+
+        /// <summary>Kept for existing callers: reports a Warning.</summary>
+        public static void AddLog(string message) => Report(DirectInputNotificationSeverity.Warning, message);
+
+        /// <summary>Creates the logger object if it does not exist. Main thread, Play Mode only.</summary>
+        public static void EnsureLoggerExists()
         {
-            windowFadeout = Mathf.Max(0, windowFadeout - Time.deltaTime);
+            if (Instance != null || s_quitting || !Application.isPlaying) { return; }
+            GameObject loggerObject = new("DirectInputLogger");
+            DontDestroyOnLoad(loggerObject);
+            Instance = loggerObject.AddComponent<DirectInputLogger>();
         }
-        // If no logs at all, ensure window is hidden
-        else
+
+        private void Awake()
         {
-            windowFadeout = 0f;
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+            useGUILayout = false; // cards use GUI rects only, so skip the Layout pass
         }
-    }
 
-    private void OnGUI()
-    {
-        // No need to show anything if no logs and window fully faded out
-        if (visualLogs.Count == 0 && windowFadeout <= 0.01f)
-            return;
-
-        // First ensure our styles are initialized
-        if (!stylesInitialized)
+        private void OnDestroy()
         {
-            InitializeStyles();
+            if (Instance == this) { Instance = null; }
         }
 
-        float windowWidth = 350;
-        float windowHeight = Mathf.Min(300, 20 + visualLogs.Count * 50);
-        if (windowHeight < 80) windowHeight = 80; // Minimum height
+        private static bool s_quitting, s_domainUsed;
 
-        // Draw background box
-        Rect windowRect = new(
-            Screen.width - windowWidth - 20,
-            20,
-            windowWidth,
-            windowHeight
-        );
-
-        // Apply fadeout to entire window
-        Color originalColor = GUI.color;
-        GUI.color = new Color(originalColor.r, originalColor.g, originalColor.b, windowFadeout);
-
-        GUI.Box(windowRect, "", logWindowStyle);
-
-        GUILayout.BeginArea(windowRect);
-
-        // Header
-        GUILayout.Space(5);
-        GUILayout.Label("[DirectInputManager] Log Messages", logHeaderStyle);
-
-        // Scrollable logs area
-        logScrollPosition = GUILayout.BeginScrollView(
-            logScrollPosition,
-            GUIStyle.none,
-            GUIStyle.none,
-            GUILayout.Height(windowHeight - 40)
-        );
-
-        foreach (var log in visualLogs.OrderByDescending(l => l.time))
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
         {
-            // Apply log's own opacity on top of window fadeout
-            GUI.color = new Color(1, 1, 1, log.Opacity * windowFadeout);
-
-            GUILayout.BeginVertical(logEntryStyle);
-            GUILayout.Label(log.message);
-            GUILayout.EndVertical();
+#if !DIRECTINPUT_DISABLE_TOASTS
+            s_mainThread = Thread.CurrentThread.ManagedThreadId;
+            s_mainContext = SynchronizationContext.Current;
+#endif
+            s_quitting = false;
+            Application.quitting -= OnQuitting;
+            Application.quitting += OnQuitting;
+            Instance = null;
+            // With domain reload disabled the last session's cards and "already reported" state survive; a fresh domain keeps
+            // what was reported while it loaded (an Initialize failure during the Play Mode domain reload).
+            if (s_domainUsed)
+            {
+#if !DIRECTINPUT_DISABLE_TOASTS
+                lock (s_pending) { s_pending.Clear(); }
+                s_cards.Clear();
+#endif
+                DIManager.ResetReports();
+            }
+            s_domainUsed = true;
         }
 
-        GUILayout.EndScrollView();
-        GUILayout.EndArea();
+        private static void OnQuitting() => s_quitting = true; // also raised when the Editor leaves Play Mode
 
-        // Restore original color
-        GUI.color = originalColor;
+#if !DIRECTINPUT_DISABLE_TOASTS
+        private const int MaxStored = 20, MaxVisible = 5;
+        private const float FadeSeconds = 1f, Margin = 16f, CardWidth = 440f, Pad = 10f, Stripe = 6f, Gap = 8f, ButtonHeight = 22f;
+
+        private struct Pending { public DirectInputNotificationSeverity severity; public string title, details; }
+
+        private sealed class Card
+        {
+            public DirectInputNotificationSeverity severity;
+            public string title, details, countLabel;
+            public int count;
+            public float expiresAt;
+            public bool expanded, hovered;
+        }
+
+        private static readonly List<Pending> s_pending = new();   // any thread, guarded by itself
+        private static readonly List<Card> s_cards = new();        // main thread only, oldest first
+        private static int s_mainThread = -1, s_drainPosted;
+        private static SynchronizationContext s_mainContext;      // Unity's, to bring worker-thread reports to the main thread
+        private static readonly SendOrPostCallback s_drainCallback = _ => { Interlocked.Exchange(ref s_drainPosted, 0); Drain(); };
+        private static string s_moreLabel;
+        private static int s_moreCount;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void CreateOnStartup()
+        {
+            s_mainContext ??= SynchronizationContext.Current; // in case it was not installed yet at SubsystemRegistration
+            EnsureLoggerExists();
+            if (Instance != null) { Instance.enabled = false; }
+            Drain();
+        }
+
+        // Main thread: turns queued reports into cards (merging duplicates) and wakes the component.
+        private static void Drain()
+        {
+            if (!Application.isPlaying) { return; } // edit-mode reports wait for Play Mode, or are dropped by a domain reload
+            float now = Time.unscaledTime;
+            lock (s_pending)
+            {
+                foreach (Pending p in s_pending) { AddCard(p, now); }
+                s_pending.Clear();
+            }
+            if (s_cards.Count > 0 && Instance != null) { Instance.enabled = true; }
+        }
+
+        private static void AddCard(Pending p, float now)
+        {
+            Card card = null;
+            for (int i = 0; i < s_cards.Count; i++)
+            {
+                if (s_cards[i].severity == p.severity && s_cards[i].title == p.title) { card = s_cards[i]; s_cards.RemoveAt(i); break; }
+            }
+            card ??= new Card { severity = p.severity, title = p.title };
+            card.details = p.details;
+            card.count++;
+            card.countLabel = card.count > 1 ? "x" + card.count : null;
+            card.expiresAt = now + (p.severity == DirectInputNotificationSeverity.Error ? 20f : p.severity == DirectInputNotificationSeverity.Warning ? 12f : 6f);
+            s_cards.Add(card); // newest last, drawn on top
+            if (s_cards.Count > MaxStored) { s_cards.RemoveAt(0); }
+        }
+
+        private void Update()
+        {
+            if (!Enabled) { s_cards.Clear(); } // switched off while cards were showing
+            float now = Time.unscaledTime;
+            for (int i = s_cards.Count - 1; i >= 0; i--)
+            {
+                Card c = s_cards[i];
+                if (c.expanded || c.hovered) { c.expiresAt = Mathf.Max(c.expiresAt + Time.unscaledDeltaTime, now + FadeSeconds); } // reading pauses expiry
+                else if (now >= c.expiresAt) { s_cards.RemoveAt(i); }
+            }
+            if (s_cards.Count == 0) { enabled = false; } // idle: no Update or OnGUI calls at all
+        }
+
+        private GUIStyle titleStyle, detailsStyle, labelStyle, buttonStyle, linkStyle;
+        private static readonly GUIContent s_content = new();
+
+        private static Color SeverityColor(DirectInputNotificationSeverity s) =>
+            s == DirectInputNotificationSeverity.Error ? new Color(0.95f, 0.3f, 0.3f) :
+            s == DirectInputNotificationSeverity.Warning ? new Color(1f, 0.72f, 0.2f) : new Color(0.35f, 0.65f, 1f);
+
+        private static string SeverityName(DirectInputNotificationSeverity s) =>
+            s == DirectInputNotificationSeverity.Error ? "ERROR" : s == DirectInputNotificationSeverity.Warning ? "WARNING" : "INFO";
+
+        private void InitializeStyles()
+        {
+            titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, wordWrap = true, richText = false };
+            titleStyle.normal.textColor = Color.white;
+            detailsStyle = new GUIStyle(titleStyle) { fontSize = 13, fontStyle = FontStyle.Normal };
+            detailsStyle.normal.textColor = new Color(0.88f, 0.88f, 0.88f);
+            labelStyle = new GUIStyle(titleStyle) { fontSize = 12, wordWrap = false };
+            buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 12, richText = false };
+            linkStyle = new GUIStyle(labelStyle) { fontStyle = FontStyle.Normal };
+            linkStyle.normal.textColor = linkStyle.hover.textColor = new Color(0.55f, 0.8f, 1f);
+        }
+
+        private void OnGUI()
+        {
+            if (s_cards.Count == 0) { return; }
+            if (titleStyle == null) { InitializeStyles(); }
+            GUI.depth = -10000; // lower depth draws on top of other OnGUI scripts
+            float scale = Mathf.Clamp(Screen.height / 1080f, 1f, 4f);
+            Matrix4x4 oldMatrix = GUI.matrix;
+            Color oldColor = GUI.color;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+
+            float width = Mathf.Min(CardWidth, Screen.width / scale - 2 * Margin);
+            float x = Screen.width / scale - width - Margin, y = Margin;
+            float textWidth = width - Stripe - 2 * Pad;
+            Vector2 mouse = Event.current.mousePosition;
+            float now = Time.unscaledTime;
+            int dismiss = -1;
+            bool dismissAll = false;
+
+            if (s_cards.Count > 1)
+            {
+                GUI.color = Color.white;
+                if (GUI.Button(new Rect(x + width - 100, y, 100, ButtonHeight), "Dismiss all", buttonStyle)) { dismissAll = true; }
+                y += ButtonHeight + 4;
+            }
+
+            int first = Mathf.Max(0, s_cards.Count - MaxVisible);
+            for (int i = 0; i < first; i++) { s_cards[i].hovered = false; }
+            for (int i = s_cards.Count - 1; i >= first; i--)
+            {
+                Card c = s_cards[i];
+                bool hasDetails = !string.IsNullOrEmpty(c.details);
+                s_content.text = c.title;
+                float titleHeight = titleStyle.CalcHeight(s_content, textWidth);
+                float detailsHeight = 0f;
+                if (hasDetails && c.expanded) { s_content.text = c.details; detailsHeight = detailsStyle.CalcHeight(s_content, textWidth) + 4; }
+                float height = Pad + ButtonHeight + 4 + titleHeight + (hasDetails ? 4 + 20 + detailsHeight : 0) + Pad;
+                Rect card = new Rect(x, y, width, height);
+                c.hovered = card.Contains(mouse);
+
+                float alpha = Mathf.Clamp01((c.expiresAt - now) / FadeSeconds);
+                Color severity = SeverityColor(c.severity);
+                GUI.color = new Color(0.1f, 0.1f, 0.11f, alpha);
+                GUI.DrawTexture(card, Texture2D.whiteTexture);
+                GUI.color = new Color(severity.r, severity.g, severity.b, alpha);
+                GUI.DrawTexture(new Rect(x, y, Stripe, height), Texture2D.whiteTexture);
+
+                float left = x + Stripe + Pad, top = y + Pad;
+                GUI.color = new Color(1f, 1f, 1f, alpha);
+                labelStyle.normal.textColor = severity; // the word as well as the colour, for colour-blind readers
+                GUI.Label(new Rect(left, top, 90, ButtonHeight), SeverityName(c.severity), labelStyle);
+                if (c.countLabel != null)
+                {
+                    labelStyle.normal.textColor = Color.white;
+                    GUI.Label(new Rect(left + 90, top, 60, ButtonHeight), c.countLabel, labelStyle);
+                }
+                if (GUI.Button(new Rect(x + width - Pad - 28, top, 28, ButtonHeight), "x", buttonStyle)) { dismiss = i; }
+                if (GUI.Button(new Rect(x + width - Pad - 28 - 4 - 56, top, 56, ButtonHeight), "Copy", buttonStyle))
+                {
+                    GUIUtility.systemCopyBuffer = hasDetails ? c.title + "\n" + c.details : c.title;
+                }
+                top += ButtonHeight + 4;
+                GUI.Label(new Rect(left, top, textWidth, titleHeight), c.title, titleStyle);
+                top += titleHeight + 4;
+                if (hasDetails)
+                {
+                    if (GUI.Button(new Rect(left, top, 110, 20), c.expanded ? "Hide details" : "Show details", linkStyle)) { c.expanded = !c.expanded; }
+                    top += 20 + 4;
+                    if (c.expanded) { GUI.Label(new Rect(left, top, textWidth, detailsHeight), c.details, detailsStyle); }
+                }
+                y += height + Gap;
+            }
+
+            if (first > 0)
+            {
+                if (s_moreCount != first) { s_moreCount = first; s_moreLabel = $"+{first} more"; }
+                GUI.color = Color.white;
+                labelStyle.normal.textColor = Color.white;
+                GUI.Label(new Rect(x, y, width, ButtonHeight), s_moreLabel, labelStyle);
+            }
+
+            GUI.matrix = oldMatrix;
+            GUI.color = oldColor;
+            if (dismissAll) { s_cards.Clear(); }
+            else if (dismiss >= 0) { s_cards.RemoveAt(dismiss); }
+        }
+#endif
     }
 }
-}
-

@@ -1,17 +1,20 @@
 {
     "name": "directinput.unity.Editor",
     "rootNamespace": "DirectInputManager.Editor",
-    "references": [],
+    "references": [
+        "GUID:e21905af95dfdae408572857b49f0ef9"
+    ],
     "includePlatforms": [
-        "Editor",
-        "WindowsStandalone64"
+        "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": true,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "UNITY_STANDALONE_WIN"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
